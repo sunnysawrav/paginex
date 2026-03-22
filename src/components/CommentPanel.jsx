@@ -1,8 +1,18 @@
 import { useState } from 'react';
-import { X, Check } from 'lucide-react';
+import { X } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
-export default function CommentPanel({ page, onClose, onUpdateComments }) {
+function formatDate(val) {
+  if (!val) return '';
+  // Handle Firestore Timestamp, JS Date, or ISO string
+  const date = val?.toDate ? val.toDate() : new Date(val);
+  return date.toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' });
+}
+
+export default function CommentPanel({ page, onClose, onUpdateComments, role }) {
+  const { user } = useAuth();
   const [draft, setDraft] = useState('');
+  const isReadOnly = role === 'read';
 
   const addComment = () => {
     if (!draft.trim()) return;
@@ -10,8 +20,9 @@ export default function CommentPanel({ page, onClose, onUpdateComments }) {
       id: Date.now(),
       text: draft.trim(),
       status: 'pending',
-      createdAt: new Date().toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' }),
-      author: 'You',
+      createdAt: new Date().toISOString(),
+      authorUid: user.uid,
+      authorEmail: user.email,
     };
     onUpdateComments(page.id, [...page.comments, newComment]);
     setDraft('');
@@ -45,28 +56,50 @@ export default function CommentPanel({ page, onClose, onUpdateComments }) {
           {page.comments.length === 0 ? (
             <div className="comment-empty">No comments yet.<br />Add one below.</div>
           ) : (
-            page.comments.map(c => (
-              <div key={c.id} className="comment-item">
-                <div className="comment-item-header">
-                  <span className="comment-meta">{c.author} · {c.createdAt}</span>
-                  <div style={{ display: 'flex', gap: 4 }}>
-                    <button
-                      className={`comment-status-btn ${c.status === 'done' ? 'done' : ''}`}
-                      onClick={() => toggleStatus(c.id)}
-                    >
-                      {c.status === 'done' ? '✓ Done' : 'Pending'}
-                    </button>
-                    <button
-                      onClick={() => deleteComment(c.id)}
-                      style={{ background: 'transparent', color: 'var(--text-muted)', padding: '2px 4px', fontSize: 11, borderRadius: 3 }}
-                    >
-                      ×
-                    </button>
+            page.comments.map(c => {
+              const isOwn = c.authorUid === user.uid;
+              // Show short email: name before @ sign
+              const displayName = c.authorEmail
+                ? c.authorEmail.split('@')[0]
+                : (c.author || 'Unknown');
+
+              return (
+                <div key={c.id} className={`comment-item ${c.status === 'done' ? 'comment-done' : ''}`}>
+                  <div className="comment-item-header">
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      <span className="comment-author">{isOwn ? 'You' : displayName}</span>
+                      <span className="comment-meta">{formatDate(c.createdAt)}</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+                      {!isReadOnly && (
+                        <button
+                          className={`comment-status-btn ${c.status === 'done' ? 'done' : ''}`}
+                          onClick={() => toggleStatus(c.id)}
+                          title={c.status === 'done' ? 'Mark as pending' : 'Mark as done'}
+                        >
+                          {c.status === 'done' ? '✓ Done' : 'Pending'}
+                        </button>
+                      )}
+                      {isReadOnly && (
+                        <span className={`comment-status-badge ${c.status === 'done' ? 'done' : ''}`}>
+                          {c.status === 'done' ? '✓ Done' : 'Pending'}
+                        </span>
+                      )}
+                      {isOwn && (
+                        <button
+                          onClick={() => deleteComment(c.id)}
+                          className="comment-delete-btn"
+                          title="Delete comment"
+                        >
+                          ×
+                        </button>
+                      )}
+                    </div>
                   </div>
+                  <p className="comment-text">{c.text}</p>
                 </div>
-                <p className="comment-text">{c.text}</p>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
 

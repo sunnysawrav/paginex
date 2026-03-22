@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { roundToFour, buildPages } from '../utils/magazineUtils';
 
-export default function ProjectSetup({ onCreateProject }) {
-  const [name, setName] = useState('');
-  const [issue, setIssue] = useState('');
-  const [pageCount, setPageCount] = useState(16);
-  const [hasCenterfold, setHasCenterfold] = useState(false);
+export default function ProjectSetup({ onCreateProject, onCancel, editMode = false, initialData = null }) {
+  const [name, setName] = useState(initialData?.name || '');
+  const [issue, setIssue] = useState(initialData?.issue || '');
+  const [pageCount, setPageCount] = useState(initialData?.totalPages || 16);
+  const [hasCenterfold, setHasCenterfold] = useState(initialData?.hasCenterfold || false);
   const [error, setError] = useState('');
 
   const adjustPages = (delta) => {
@@ -18,15 +18,44 @@ export default function ProjectSetup({ onCreateProject }) {
   const handleSubmit = () => {
     if (!name.trim()) { setError('Please give your magazine a name.'); return; }
     const total = roundToFour(pageCount);
-    const pages = buildPages(total, hasCenterfold);
-    onCreateProject({ name: name.trim(), issue: issue.trim(), totalPages: total, hasCenterfold, pages, createdAt: new Date().toISOString() });
+
+    let pages;
+    if (editMode && initialData) {
+      // Preserve existing page content, only add/remove from the end
+      const existingPages = initialData.pages || [];
+      const newPages = buildPages(total, hasCenterfold);
+      pages = newPages.map((newPage, i) => {
+        const existing = existingPages[i];
+        if (existing) {
+          return {
+            ...newPage,
+            // Don't carry over content from old centerfold-locked pages
+            content: existing.isCenterfold ? newPage.content : existing.content,
+            contentReceived: existing.isCenterfold ? false : existing.contentReceived,
+            comments: existing.isCenterfold ? [] : existing.comments,
+          };
+        }
+        return newPage;
+      });
+    } else {
+      pages = buildPages(total, hasCenterfold);
+    }
+
+    onCreateProject({
+      name: name.trim(),
+      issue: issue.trim(),
+      totalPages: total,
+      hasCenterfold,
+      pages,
+      ...(editMode ? {} : { createdAt: new Date().toISOString() }),
+    });
   };
 
   return (
     <div className="setup-container">
       <div className="setup-header">
-        <h2>New Magazine Project</h2>
-        <p>Set up your layout blocking template. You can adjust pages later.</p>
+        <h2>{editMode ? 'Project Settings' : 'New Magazine Project'}</h2>
+        <p>{editMode ? 'Update your magazine details. Page content will be preserved.' : 'Set up your layout blocking template. You can adjust pages later.'}</p>
       </div>
 
       <div className="setup-card">
@@ -75,9 +104,16 @@ export default function ProjectSetup({ onCreateProject }) {
 
         {error && <p style={{ color: 'var(--accent)', fontSize: 12, marginTop: 12, fontFamily: 'var(--font-mono)' }}>{error}</p>}
 
-        <button className="btn-primary" onClick={handleSubmit}>
-          Create Magazine Layout →
-        </button>
+        <div style={{ display: 'flex', gap: 10, marginTop: 24 }}>
+          {editMode && (
+            <button className="btn-ghost" style={{ flex: 1 }} onClick={onCancel}>
+              Cancel
+            </button>
+          )}
+          <button className="btn-primary" style={{ flex: editMode ? 2 : 1, marginTop: 0 }} onClick={handleSubmit}>
+            {editMode ? 'Save Changes' : 'Create Magazine Layout →'}
+          </button>
+        </div>
       </div>
     </div>
   );
