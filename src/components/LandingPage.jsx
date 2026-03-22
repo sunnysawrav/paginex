@@ -276,7 +276,7 @@ export default function LandingPage({ onLogin }) {
         <div className="landing-footer-inner">
           <div className="landing-footer-logo">
             <img src="/paginex/favicon.ico" alt="Paginex" className="landing-logo-img small" />
-            <span>Paginex</span>
+            <span style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 700 }}>Paginex</span>
           </div>
           <p className="landing-footer-copy">© {new Date().getFullYear()} Paginex. All rights reserved.</p>
           <button className="landing-footer-login" onClick={onLogin}>Sign In →</button>
