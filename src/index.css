@@ -314,15 +314,15 @@ input, textarea, select { font-family: var(--font-body); outline: none; transiti
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg-primary);
+  background: #0E0D0C;
   padding: 24px;
 }
 
 .auth-card {
   width: 100%;
   max-width: 380px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
+  background: #1C1917;
+  border: 1px solid #2C2A28;
   border-radius: calc(var(--radius) * 2);
   padding: 36px 32px 28px;
   display: flex;
@@ -353,7 +353,7 @@ input, textarea, select { font-family: var(--font-body); outline: none; transiti
 .auth-logo h1 {
   font-size: 20px;
   font-weight: 700;
-  color: var(--text-primary);
+  color: #F5F2EC;
   letter-spacing: -0.02em;
   margin: 0;
 }
@@ -363,13 +363,13 @@ input, textarea, select { font-family: var(--font-body); outline: none; transiti
   font-size: 10px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--text-muted);
+  color: #57534E;
 }
 
 .auth-title {
   font-size: 14px;
   font-weight: 600;
-  color: var(--text-primary);
+  color: #F5F2EC;
   text-align: center;
   margin-top: -8px;
 }
@@ -391,16 +391,16 @@ input, textarea, select { font-family: var(--font-body); outline: none; transiti
   font-size: 10px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--text-muted);
+  color: #57534E;
 }
 
 .auth-field input {
   padding: 9px 12px;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border);
+  background: #141210;
+  border: 1px solid #2C2A28;
   border-radius: var(--radius);
   font-size: 13px;
-  color: var(--text-primary);
+  color: #F5F2EC;
   font-family: var(--font-body);
   outline: none;
   transition: border-color 0.15s ease;
@@ -411,8 +411,8 @@ input, textarea, select { font-family: var(--font-body); outline: none; transiti
 }
 
 .auth-field input::placeholder {
-  color: var(--text-muted);
-  opacity: 0.6;
+  color: #57534E;
+  opacity: 0.8;
 }
 
 .auth-error {
